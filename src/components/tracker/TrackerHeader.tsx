@@ -14,62 +14,53 @@ interface TrackerHeaderProps {
 }
 
 const statItems = [
-  { key: 'saved', label: 'Saved', icon: Bookmark, color: 'from-blue-400 to-blue-500' },
-  { key: 'applied', label: 'Applied', icon: Send, color: 'from-accent to-accent-dark' },
-  { key: 'interview', label: 'Interviews', icon: MessageSquare, color: 'from-purple-400 to-purple-500' },
-  { key: 'offers', label: 'Offers', icon: Gift, color: 'from-yellow-400 to-amber-500' },
+  { key: 'saved', label: 'Saved', icon: Bookmark, color: 'bg-blue-500' },
+  { key: 'applied', label: 'Applied', icon: Send, color: 'bg-accent' },
+  { key: 'interview', label: 'Interviews', icon: MessageSquare, color: 'bg-purple-500' },
+  { key: 'offers', label: 'Offers', icon: Gift, color: 'bg-yellow-500' },
 ]
 
 export function TrackerHeader({ stats }: TrackerHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 glass border-b-2 border-jobbi-50">
-      <div className="max-w-6xl mx-auto px-8 py-8">
+    <header className="sticky top-0 z-10 glass border-b border-steel-200">
+      <div className="max-w-5xl mx-auto px-4 py-4">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', bounce: 0.4 }}
         >
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-black text-jobbi-dark flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-jobbi-navy to-jobbi-slate flex items-center justify-center shadow-lg">
-                  <Table2 className="w-6 h-6 text-white" />
-                </div>
+              <h1 className="text-xl font-bold text-jobbi-dark flex items-center gap-2">
+                <Table2 className="w-5 h-5 text-jobbi-navy" />
                 Job Tracker
               </h1>
-              <p className="text-jobbi-muted mt-2 font-medium text-lg">
+              <p className="text-sm text-steel-500">
                 {stats.total > 0 
-                  ? `📊 Tracking ${stats.total} application${stats.total !== 1 ? 's' : ''}`
-                  : '✨ Start saving jobs to track them here'
+                  ? `Tracking ${stats.total} application${stats.total !== 1 ? 's' : ''}`
+                  : 'Start saving jobs to track them'
                 }
               </p>
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-            {statItems.map((item, index) => {
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-3">
+            {statItems.map((item) => {
               const Icon = item.icon
               const value = stats[item.key as keyof typeof stats]
               
               return (
-                <motion.div
-                  key={item.key}
-                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: index * 0.1, type: 'spring', bounce: 0.4 }}
-                  className="card p-5 hover:shadow-card transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
-                      <Icon className="w-7 h-7 text-white" />
+                <div key={item.key} className="card p-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center`}>
+                      <Icon className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-3xl font-black text-jobbi-dark">{value}</p>
-                      <p className="text-sm text-jobbi-muted font-semibold">{item.label}</p>
+                      <p className="text-lg font-bold text-jobbi-dark">{value}</p>
+                      <p className="text-xs text-steel-500">{item.label}</p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )
             })}
           </div>

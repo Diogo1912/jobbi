@@ -19,7 +19,6 @@ export default async function TrackerPage() {
     })
   } catch (error) {
     console.error('Failed to fetch tracked jobs:', error)
-    // Return empty array if database isn't available
   }
 
   const stats = {
@@ -34,7 +33,7 @@ export default async function TrackerPage() {
     <div className="min-h-screen bg-steel-50">
       <TrackerHeader stats={stats} />
       
-      <div className="max-w-6xl mx-auto px-6 pb-12">
+      <div className="max-w-5xl mx-auto px-4 py-4">
         {trackedJobs.length === 0 ? (
           <EmptyTracker />
         ) : (

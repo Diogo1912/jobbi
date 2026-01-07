@@ -19,18 +19,17 @@ export default async function FeedPage() {
     })
   } catch (error) {
     console.error('Failed to fetch jobs:', error)
-    // Return empty array if database isn't available
   }
 
   return (
     <div className="min-h-screen bg-steel-50">
       <FeedHeader jobCount={jobs.length} />
       
-      <div className="max-w-2xl mx-auto px-6 pb-12">
+      <div className="max-w-2xl mx-auto px-4 py-4">
         {jobs.length === 0 ? (
           <EmptyFeed />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {jobs.map((job, index) => (
               <JobCard key={job.id} job={job} index={index} />
             ))}

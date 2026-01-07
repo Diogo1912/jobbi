@@ -26,7 +26,6 @@ export default async function SettingsPage() {
   let settings: Settings = defaultSettings
   
   try {
-    // Get or create settings
     const dbSettings = await prisma.settings.findUnique({
       where: { id: 'user-settings' }
     })
@@ -40,14 +39,13 @@ export default async function SettingsPage() {
     }
   } catch (error) {
     console.error('Failed to fetch settings:', error)
-    // Use default settings if database isn't available
   }
 
   return (
     <div className="min-h-screen bg-steel-50">
       <SettingsHeader />
       
-      <div className="max-w-3xl mx-auto px-6 pb-12">
+      <div className="max-w-2xl mx-auto px-4 py-4">
         <SettingsForm settings={settings} />
       </div>
     </div>

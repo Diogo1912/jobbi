@@ -15,8 +15,7 @@ import {
   Ban,
   MessageSquare,
   Save,
-  CheckCircle,
-  Sparkles
+  CheckCircle
 } from 'lucide-react'
 import { Settings } from '@prisma/client'
 
@@ -29,98 +28,74 @@ interface FormField {
   label: string
   icon: any
   placeholder: string
-  hint: string
-  color: string
 }
 
 const formFields: FormField[] = [
   {
     key: 'desiredRoles',
-    label: 'What roles are you looking for?',
+    label: 'Desired roles',
     icon: Briefcase,
     placeholder: 'e.g., Software Engineer, Product Manager, Data Scientist...',
-    hint: 'List the job titles or roles you\'re interested in',
-    color: 'from-blue-400 to-blue-500'
   },
   {
     key: 'preferredLocations',
-    label: 'Where do you want to work?',
+    label: 'Preferred locations',
     icon: MapPin,
-    placeholder: 'e.g., San Francisco, New York, London, anywhere in Europe...',
-    hint: 'Cities, regions, or countries you\'d like to work in',
-    color: 'from-emerald-400 to-emerald-500'
+    placeholder: 'e.g., San Francisco, New York, Remote...',
   },
   {
     key: 'remotePreference',
-    label: 'Remote work preference?',
+    label: 'Remote preference',
     icon: Home,
-    placeholder: 'e.g., Fully remote preferred, hybrid okay, willing to relocate...',
-    hint: 'Describe your ideal work arrangement',
-    color: 'from-violet-400 to-violet-500'
+    placeholder: 'e.g., Fully remote, hybrid, on-site...',
   },
   {
     key: 'salaryExpectation',
-    label: 'Salary expectations?',
+    label: 'Salary expectation',
     icon: DollarSign,
-    placeholder: 'e.g., $100k-150k, open to negotiation, equity important...',
-    hint: 'Your target compensation range',
-    color: 'from-green-400 to-green-500'
+    placeholder: 'e.g., $100k-150k, negotiable...',
   },
   {
     key: 'skills',
-    label: 'What are your skills & technologies?',
+    label: 'Skills & technologies',
     icon: Code,
-    placeholder: 'e.g., React, Python, AWS, Project Management, Data Analysis...',
-    hint: 'Technical and soft skills you bring to the table',
-    color: 'from-cyan-400 to-cyan-500'
+    placeholder: 'e.g., React, Python, AWS, Project Management...',
   },
   {
     key: 'experience',
-    label: 'Your work experience',
+    label: 'Work experience',
     icon: Clock,
-    placeholder: 'e.g., 5 years in software development, led a team of 8, worked at startups...',
-    hint: 'Summarize your professional background',
-    color: 'from-amber-400 to-amber-500'
+    placeholder: 'e.g., 5 years in software development...',
   },
   {
     key: 'education',
-    label: 'Educational background',
+    label: 'Education',
     icon: GraduationCap,
-    placeholder: 'e.g., BS in Computer Science, bootcamp graduate, self-taught...',
-    hint: 'Your degrees, certifications, or relevant education',
-    color: 'from-indigo-400 to-indigo-500'
+    placeholder: 'e.g., BS in Computer Science, bootcamp...',
   },
   {
     key: 'industries',
-    label: 'Industries of interest?',
+    label: 'Industries of interest',
     icon: Building2,
-    placeholder: 'e.g., Tech, Healthcare, Finance, E-commerce, Gaming...',
-    hint: 'Sectors or industries you\'d like to work in',
-    color: 'from-pink-400 to-pink-500'
+    placeholder: 'e.g., Tech, Healthcare, Finance...',
   },
   {
     key: 'companySize',
-    label: 'Preferred company size?',
+    label: 'Company size preference',
     icon: Scale,
-    placeholder: 'e.g., Early-stage startup, mid-size, enterprise, doesn\'t matter...',
-    hint: 'The type of company culture you thrive in',
-    color: 'from-teal-400 to-teal-500'
+    placeholder: 'e.g., Startup, mid-size, enterprise...',
   },
   {
     key: 'dealBreakers',
-    label: 'Deal breakers?',
+    label: 'Deal breakers',
     icon: Ban,
-    placeholder: 'e.g., No on-call, won\'t relocate, need visa sponsorship...',
-    hint: 'Things that would make you pass on a job',
-    color: 'from-rose-400 to-rose-500'
+    placeholder: 'e.g., No on-call, need visa sponsorship...',
   },
   {
     key: 'additionalNotes',
-    label: 'Anything else Jobbi should know?',
+    label: 'Additional notes',
     icon: MessageSquare,
-    placeholder: 'e.g., Looking for a role that values work-life balance, interested in AI companies...',
-    hint: 'Any other preferences or details that might help',
-    color: 'from-accent to-accent-dark'
+    placeholder: 'Anything else that might help...',
   },
 ]
 
@@ -158,7 +133,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {formFields.map((field, index) => {
           const Icon = field.icon
           const value = formData[field.key] as string | null
@@ -166,30 +141,25 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           return (
             <motion.div
               key={field.key}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.05, type: 'spring', bounce: 0.3 }}
-              className="card p-7 hover:shadow-card transition-all duration-300 hover:-translate-y-1"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="card p-4"
             >
               <label className="block">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${field.color} flex items-center justify-center shadow-lg`}>
-                    <Icon className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-jobbi-dark text-lg">
-                      {field.label}
-                    </span>
-                    <p className="text-sm text-jobbi-muted font-medium">{field.hint}</p>
-                  </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon className="w-4 h-4 text-jobbi-navy" />
+                  <span className="font-medium text-sm text-jobbi-dark">
+                    {field.label}
+                  </span>
                 </div>
                 
                 <textarea
                   value={value || ''}
                   onChange={(e) => handleChange(field.key, e.target.value)}
                   placeholder={field.placeholder}
-                  className="textarea"
-                  rows={3}
+                  className="textarea text-sm"
+                  rows={2}
                 />
               </label>
             </motion.div>
@@ -198,47 +168,36 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       </div>
 
       {/* Save Button */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="sticky bottom-6 mt-10"
-      >
-        <div className="card p-5 flex items-center justify-between shadow-card border-2 border-jobbi-light/30">
-          <p className="text-jobbi-muted font-semibold flex items-center gap-2">
-            {saved 
-              ? <>
-                  <Sparkles className="w-5 h-5 text-accent" />
-                  Your preferences have been saved!
-                </>
-              : '💾 Remember to save your changes'
-            }
+      <div className="sticky bottom-4 mt-6">
+        <div className="card p-3 flex items-center justify-between shadow-card">
+          <p className="text-sm text-steel-500">
+            {saved ? 'Preferences saved!' : 'Save your changes'}
           </p>
           
           <button
             type="submit"
             disabled={isSaving}
-            className="btn-primary disabled:opacity-50"
+            className="btn-primary text-sm disabled:opacity-50"
           >
             {saved ? (
               <>
-                <CheckCircle className="w-5 h-5" />
-                Saved!
+                <CheckCircle className="w-4 h-4" />
+                Saved
               </>
             ) : isSaving ? (
               <>
-                <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="w-5 h-5" />
-                Save Preferences
+                <Save className="w-4 h-4" />
+                Save
               </>
             )}
           </button>
         </div>
-      </motion.div>
+      </div>
     </form>
   )
 }
