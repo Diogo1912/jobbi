@@ -63,14 +63,25 @@ export async function POST() {
 
     console.log(`Attempting to save ${jobsToSave.length} jobs...`)
 
-    // Get existing job URLs to avoid duplicates
-    const existingUrls = await prisma.job.findMany({
-      select: { url: true }
+    // Get existing job URLs to avoid duplicates (application-level deduplication)
+    const existingJobs = await prisma.job.findMany({
+      select: { url: true, title: true, company: true }
     })
-    const existingUrlSet = new Set(existingUrls.map(j => j.url))
+    
+    // Create a set of existing job identifiers (url or title+company combo)
+    const existingSet = new Set<string>()
+    existingJobs.forEach(j => {
+      existingSet.add(j.url)
+      existingSet.add(`${j.title}:::${j.company}`.toLowerCase())
+    })
 
     // Filter out duplicates
-    const newJobs = jobsToSave.filter(job => !existingUrlSet.has(job.url))
+    const newJobs = jobsToSave.filter(job => {
+      const urlExists = existingSet.has(job.url)
+      const titleCompanyExists = existingSet.has(`${job.title}:::${job.company}`.toLowerCase())
+      return !urlExists && !titleCompanyExists
+    })
+    
     console.log(`${newJobs.length} new jobs after deduplication`)
 
     if (newJobs.length === 0) {
@@ -84,47 +95,34 @@ export async function POST() {
     }
 
     // Store new jobs in database
-    let savedCount = 0
-    for (const job of newJobs) {
-      try {
-        await prisma.job.create({
-          data: {
-            title: job.title,
-            company: job.company,
-            location: job.location || null,
-            type: mapJobType(job.type),
-            salary: job.salary || null,
-            description: job.description,
-            url: job.url,
-            source: job.source,
-            postedAt: job.postedAt || new Date(),
-          }
-        })
-        savedCount++
-      } catch (error: any) {
-        // Skip duplicates (unique constraint violation)
-        if (error.code === 'P2002') {
-          console.log(`Skipping duplicate: ${job.url}`)
-        } else {
-          console.error(`Failed to save job: ${error.message}`)
-        }
-      }
-    }
+    const createdJobs = await prisma.job.createMany({
+      data: newJobs.map(job => ({
+        title: job.title,
+        company: job.company,
+        location: job.location || null,
+        type: mapJobType(job.type),
+        salary: job.salary || null,
+        description: job.description,
+        url: job.url,
+        source: job.source,
+        postedAt: job.postedAt || new Date(),
+      })),
+      skipDuplicates: true,
+    })
 
     // Log the search
     await prisma.searchLog.create({
       data: {
         query: `APIs + ${settings?.scrapeUrls ? 'Custom URLs' : 'No custom URLs'}`,
-        jobsFound: savedCount,
+        jobsFound: createdJobs.count,
       }
     })
 
     return NextResponse.json({
       success: true,
       data: {
-        jobsFound: savedCount,
+        jobsFound: createdJobs.count,
         totalScanned: allJobs.length,
-        duplicatesSkipped: newJobs.length - savedCount,
       }
     })
   } catch (error) {

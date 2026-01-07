@@ -17,7 +17,7 @@ model Job {
   type        JobType  @default(FULL_TIME)
   salary      String?
   description String   @db.Text
-  url         String   @unique // Unique to prevent duplicates
+  url         String   // Removed unique constraint to avoid migration issues
   source      String?  // Where the job was found
   postedAt    DateTime?
   createdAt   DateTime @default(now())
@@ -25,6 +25,8 @@ model Job {
 
   // Tracking relationship
   tracking    TrackedJob?
+
+  @@index([url]) // Index for faster lookups
 }
 
 enum JobType {
@@ -63,26 +65,26 @@ model Settings {
   id                String   @id @default("user-settings")
   
   // Job preferences
-  desiredRoles      String?  @db.Text  // What roles are you looking for?
-  preferredLocations String? @db.Text  // Where do you want to work?
-  remotePreference  String?  @db.Text  // Remote/hybrid/onsite preferences
-  salaryExpectation String?  @db.Text  // Expected salary range
+  desiredRoles      String?  @db.Text
+  preferredLocations String? @db.Text
+  remotePreference  String?  @db.Text
+  salaryExpectation String?  @db.Text
   
   // Background
-  skills            String?  @db.Text  // Your skills and technologies
-  experience        String?  @db.Text  // Work experience summary
-  education         String?  @db.Text  // Educational background
+  skills            String?  @db.Text
+  experience        String?  @db.Text
+  education         String?  @db.Text
   
   // Preferences
-  industries        String?  @db.Text  // Industries of interest
-  companySize       String?  @db.Text  // Startup/mid/enterprise preference
-  dealBreakers      String?  @db.Text  // What you absolutely don't want
+  industries        String?  @db.Text
+  companySize       String?  @db.Text
+  dealBreakers      String?  @db.Text
   
   // Open-ended
-  additionalNotes   String?  @db.Text  // Any other preferences
+  additionalNotes   String?  @db.Text
   
   // Custom scraping sources
-  scrapeUrls        String?  @db.Text  // URLs to scrape (one per line)
+  scrapeUrls        String?  @db.Text
   
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
