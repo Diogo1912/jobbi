@@ -6,14 +6,21 @@ import { EmptyFeed } from '@/components/feed/EmptyFeed'
 export const dynamic = 'force-dynamic'
 
 export default async function FeedPage() {
-  const jobs = await prisma.job.findMany({
-    include: {
-      tracking: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+  let jobs: any[] = []
+  
+  try {
+    jobs = await prisma.job.findMany({
+      include: {
+        tracking: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+  } catch (error) {
+    console.error('Failed to fetch jobs:', error)
+    // Return empty array if database isn't available
+  }
 
   return (
     <div className="min-h-screen bg-steel-50">
@@ -33,4 +40,3 @@ export default async function FeedPage() {
     </div>
   )
 }
-

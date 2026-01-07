@@ -6,14 +6,21 @@ import { EmptyTracker } from '@/components/tracker/EmptyTracker'
 export const dynamic = 'force-dynamic'
 
 export default async function TrackerPage() {
-  const trackedJobs = await prisma.trackedJob.findMany({
-    include: {
-      job: true,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  })
+  let trackedJobs: any[] = []
+  
+  try {
+    trackedJobs = await prisma.trackedJob.findMany({
+      include: {
+        job: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    })
+  } catch (error) {
+    console.error('Failed to fetch tracked jobs:', error)
+    // Return empty array if database isn't available
+  }
 
   const stats = {
     total: trackedJobs.length,
@@ -37,4 +44,3 @@ export default async function TrackerPage() {
     </div>
   )
 }
-
