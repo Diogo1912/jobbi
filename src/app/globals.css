@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-steel-50 text-jobbi-dark antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-steel-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-steel-300 rounded-full hover:bg-steel-400 transition-colors;
+  }
+}
+
+@layer components {
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-steel-100 overflow-hidden;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-300 hover:shadow-card hover:-translate-y-1;
+  }
+
+  /* Button styles */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-hover focus:ring-accent shadow-md hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply btn bg-jobbi-navy text-white hover:bg-jobbi-slate focus:ring-jobbi-navy;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-jobbi-muted hover:bg-steel-100 focus:ring-steel-300;
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-steel-200 text-jobbi-slate hover:border-accent hover:text-accent focus:ring-accent;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-steel-200 bg-white text-jobbi-dark placeholder:text-steel-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200;
+  }
+
+  .textarea {
+    @apply input resize-none min-h-[120px];
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-type {
+    @apply badge bg-steel-100 text-jobbi-slate;
+  }
+
+  .badge-status {
+    @apply badge;
+  }
+
+  /* Nav link */
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-steel-500 font-medium transition-all duration-200 hover:bg-steel-100 hover:text-jobbi-dark;
+  }
+
+  .nav-link-active {
+    @apply nav-link bg-accent/10 text-accent hover:bg-accent/15;
+  }
+}
+
+@layer utilities {
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-orange-400;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-lg;
+  }
+
+  /* Smooth fade edges for scrollable content */
+  .fade-edges {
+    mask-image: linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent);
+  }
+}
+
