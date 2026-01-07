@@ -15,8 +15,8 @@ export interface RawJob {
 // Remotive API - Remote jobs
 async function fetchRemotiveJobs(): Promise<RawJob[]> {
   try {
-    const response = await fetch('https://remotive.com/api/remote-jobs?limit=20', {
-      next: { revalidate: 3600 } // Cache for 1 hour
+    const response = await fetch('https://remotive.com/api/remote-jobs?limit=50', {
+      next: { revalidate: 3600 }
     })
     
     if (!response.ok) return []
@@ -51,7 +51,7 @@ async function fetchArbeitnowJobs(): Promise<RawJob[]> {
     
     const data = await response.json()
     
-    return data.data?.slice(0, 20).map((job: any) => ({
+    return data.data?.slice(0, 50).map((job: any) => ({
       title: job.title,
       company: job.company_name,
       location: job.location || (job.remote ? 'Remote' : 'Europe'),
@@ -82,8 +82,7 @@ async function fetchRemoteOKJobs(): Promise<RawJob[]> {
     
     const data = await response.json()
     
-    // First item is metadata, skip it
-    return data.slice(1, 21).map((job: any) => ({
+    return data.slice(1, 51).map((job: any) => ({
       title: job.position,
       company: job.company,
       location: job.location || 'Remote',
@@ -102,51 +101,6 @@ async function fetchRemoteOKJobs(): Promise<RawJob[]> {
   }
 }
 
-// Adzuna RSS (UK jobs) - No API key needed for RSS
-async function fetchAdzunaRSS(): Promise<RawJob[]> {
-  try {
-    // Adzuna provides RSS feeds for job searches
-    const response = await fetch('https://www.adzuna.co.uk/jobs/rss?q=developer', {
-      next: { revalidate: 3600 }
-    })
-    
-    if (!response.ok) return []
-    
-    const xml = await response.text()
-    const jobs: RawJob[] = []
-    
-    // Simple XML parsing for RSS items
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g
-    let match
-    
-    while ((match = itemRegex.exec(xml)) !== null && jobs.length < 10) {
-      const item = match[1]
-      const title = extractTag(item, 'title')
-      const link = extractTag(item, 'link')
-      const description = extractTag(item, 'description')
-      const company = extractTag(item, 'source') || 'Unknown'
-      
-      if (title && link) {
-        jobs.push({
-          title: decodeHtmlEntities(title),
-          company: decodeHtmlEntities(company),
-          location: 'UK',
-          type: 'FULL_TIME',
-          description: stripHtml(decodeHtmlEntities(description || '')).substring(0, 500),
-          url: link,
-          source: 'Adzuna',
-        })
-      }
-    }
-    
-    return jobs
-  } catch (error) {
-    console.error('Adzuna RSS error:', error)
-    return []
-  }
-}
-
-// Helper to strip HTML tags
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]*>/g, ' ')
@@ -154,80 +108,182 @@ function stripHtml(html: string): string {
     .trim()
 }
 
-// Helper to extract XML tag content
-function extractTag(xml: string, tag: string): string {
-  const match = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>|<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`))
-  return match ? (match[1] || match[2] || '').trim() : ''
-}
-
-// Helper to decode HTML entities
-function decodeHtmlEntities(text: string): string {
-  return text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-}
-
 // Fetch from all sources and combine
 export async function fetchAllJobs(): Promise<RawJob[]> {
-  const [remotive, arbeitnow, remoteok, adzuna] = await Promise.all([
+  const [remotive, arbeitnow, remoteok] = await Promise.all([
     fetchRemotiveJobs(),
     fetchArbeitnowJobs(),
     fetchRemoteOKJobs(),
-    fetchAdzunaRSS(),
   ])
 
-  console.log(`Fetched jobs: Remotive=${remotive.length}, Arbeitnow=${arbeitnow.length}, RemoteOK=${remoteok.length}, Adzuna=${adzuna.length}`)
+  console.log(`Fetched jobs: Remotive=${remotive.length}, Arbeitnow=${arbeitnow.length}, RemoteOK=${remoteok.length}`)
 
-  // Combine and shuffle
-  const allJobs = [...remotive, ...arbeitnow, ...remoteok, ...adzuna]
-  
-  // Shuffle array
-  for (let i = allJobs.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [allJobs[i], allJobs[j]] = [allJobs[j], allJobs[i]]
-  }
-
-  return allJobs
+  return [...remotive, ...arbeitnow, ...remoteok]
 }
 
-// Filter jobs based on user preferences using simple keyword matching
+// Improved job filtering with scoring
 export function filterJobsByPreferences(
   jobs: RawJob[],
   preferences: {
     desiredRoles?: string | null
     preferredLocations?: string | null
+    remotePreference?: string | null
     skills?: string | null
     industries?: string | null
+    dealBreakers?: string | null
   }
 ): RawJob[] {
-  const roleKeywords = (preferences.desiredRoles || '').toLowerCase().split(/[,\s]+/).filter(Boolean)
-  const locationKeywords = (preferences.preferredLocations || '').toLowerCase().split(/[,\s]+/).filter(Boolean)
-  const skillKeywords = (preferences.skills || '').toLowerCase().split(/[,\s]+/).filter(Boolean)
+  // Extract keywords from preferences
+  const roleKeywords = extractKeywords(preferences.desiredRoles)
+  const locationKeywords = extractKeywords(preferences.preferredLocations)
+  const skillKeywords = extractKeywords(preferences.skills)
+  const industryKeywords = extractKeywords(preferences.industries)
+  const dealBreakers = extractKeywords(preferences.dealBreakers)
   
-  if (roleKeywords.length === 0 && locationKeywords.length === 0 && skillKeywords.length === 0) {
-    // No preferences set, return all jobs
+  // Check if user wants remote
+  const wantsRemote = (preferences.remotePreference || '').toLowerCase().includes('remote')
+  
+  // If no preferences, return all jobs
+  if (roleKeywords.length === 0 && skillKeywords.length === 0 && industryKeywords.length === 0) {
+    console.log('No preferences set, returning all jobs')
     return jobs
   }
 
-  return jobs.filter(job => {
+  // Score each job
+  const scoredJobs = jobs.map(job => {
     const jobText = `${job.title} ${job.description} ${job.company}`.toLowerCase()
+    const jobTitle = job.title.toLowerCase()
     const jobLocation = job.location.toLowerCase()
     
-    // Check if any role keyword matches
-    const roleMatch = roleKeywords.length === 0 || roleKeywords.some(kw => jobText.includes(kw))
+    let score = 0
+    let matchDetails: string[] = []
+
+    // Role matching (highest weight - 40 points)
+    if (roleKeywords.length > 0) {
+      const roleMatches = roleKeywords.filter(kw => {
+        // Title match is worth more
+        if (jobTitle.includes(kw)) return true
+        // Description match
+        if (jobText.includes(kw)) return true
+        return false
+      })
+      
+      if (roleMatches.length > 0) {
+        // Title matches worth more
+        const titleMatches = roleMatches.filter(kw => jobTitle.includes(kw))
+        score += titleMatches.length * 20 // 20 points per title match
+        score += (roleMatches.length - titleMatches.length) * 5 // 5 points per description match
+        matchDetails.push(`roles: ${roleMatches.join(', ')}`)
+      }
+    }
+
+    // Skills matching (30 points)
+    if (skillKeywords.length > 0) {
+      const skillMatches = skillKeywords.filter(kw => jobText.includes(kw))
+      if (skillMatches.length > 0) {
+        score += Math.min(skillMatches.length * 10, 30)
+        matchDetails.push(`skills: ${skillMatches.join(', ')}`)
+      }
+    }
+
+    // Location matching (15 points)
+    if (locationKeywords.length > 0) {
+      const locationMatch = locationKeywords.some(kw => jobLocation.includes(kw))
+      if (locationMatch) {
+        score += 15
+        matchDetails.push('location match')
+      }
+    }
     
-    // Check location (be lenient - 'remote' matches everything if user wants remote)
-    const locationMatch = locationKeywords.length === 0 || 
-      locationKeywords.some(kw => jobLocation.includes(kw) || kw === 'remote' && job.type === 'REMOTE')
-    
-    // Check skills
-    const skillMatch = skillKeywords.length === 0 || skillKeywords.some(kw => jobText.includes(kw))
-    
-    return roleMatch || skillMatch // At least one should match
+    // Remote preference (15 points)
+    if (wantsRemote && (job.type === 'REMOTE' || jobLocation.includes('remote'))) {
+      score += 15
+      matchDetails.push('remote')
+    }
+
+    // Industry matching (10 points)
+    if (industryKeywords.length > 0) {
+      const industryMatch = industryKeywords.some(kw => jobText.includes(kw))
+      if (industryMatch) {
+        score += 10
+        matchDetails.push('industry match')
+      }
+    }
+
+    // Deal breakers (negative score)
+    if (dealBreakers.length > 0) {
+      const hasDealBreaker = dealBreakers.some(kw => jobText.includes(kw))
+      if (hasDealBreaker) {
+        score -= 100 // Heavily penalize
+        matchDetails.push('DEAL BREAKER')
+      }
+    }
+
+    return { job, score, matchDetails }
   })
+
+  // Filter out jobs with score <= 0 and sort by score
+  const filteredJobs = scoredJobs
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+  
+  console.log(`Filtering: ${jobs.length} jobs -> ${filteredJobs.length} matching jobs`)
+  
+  // Log top matches for debugging
+  filteredJobs.slice(0, 5).forEach(({ job, score, matchDetails }) => {
+    console.log(`  [${score}] ${job.title} at ${job.company} - ${matchDetails.join(', ')}`)
+  })
+
+  return filteredJobs.map(({ job }) => job)
 }
 
+// Extract meaningful keywords from preference string
+function extractKeywords(text: string | null | undefined): string[] {
+  if (!text) return []
+  
+  // Common words to ignore
+  const stopWords = new Set([
+    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
+    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'been', 'be',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare',
+    'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her',
+    'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their', 'this',
+    'that', 'these', 'those', 'am', 'no', 'not', 'any', 'some', 'all',
+    'etc', 'like', 'such', 'want', 'looking', 'prefer', 'preferably',
+    'ideally', 'experience', 'years', 'work', 'job', 'role', 'position'
+  ])
+
+  // Split by common delimiters and clean up
+  const words = text
+    .toLowerCase()
+    .replace(/[,;\/\-\(\)]/g, ' ') // Replace delimiters with spaces
+    .split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length >= 2 && !stopWords.has(w))
+  
+  // Also extract multi-word phrases (e.g., "software engineer", "full stack")
+  const phrases: string[] = []
+  const commonPhrases = [
+    'software engineer', 'frontend developer', 'backend developer', 'full stack',
+    'fullstack', 'data scientist', 'data engineer', 'machine learning', 'ml engineer',
+    'product manager', 'project manager', 'ux designer', 'ui designer', 'devops',
+    'site reliability', 'sre', 'qa engineer', 'quality assurance', 'mobile developer',
+    'ios developer', 'android developer', 'react developer', 'node developer',
+    'python developer', 'java developer', 'golang', 'rust developer', 'cloud engineer',
+    'solutions architect', 'technical lead', 'tech lead', 'engineering manager',
+    'senior engineer', 'junior developer', 'entry level', 'mid level', 'senior level'
+  ]
+  
+  const lowerText = text.toLowerCase()
+  commonPhrases.forEach(phrase => {
+    if (lowerText.includes(phrase)) {
+      phrases.push(phrase)
+    }
+  })
+  
+  // Combine individual words and phrases, remove duplicates
+  const allKeywords = [...new Set([...words, ...phrases])]
+  
+  return allKeywords
+}

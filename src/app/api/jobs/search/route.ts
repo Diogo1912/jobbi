@@ -10,6 +10,13 @@ export async function POST() {
       where: { id: 'user-settings' }
     })
 
+    console.log('User preferences:', {
+      roles: settings?.desiredRoles,
+      locations: settings?.preferredLocations,
+      remote: settings?.remotePreference,
+      skills: settings?.skills,
+    })
+
     // Collect jobs from all sources
     const allJobs: RawJob[] = []
 
@@ -26,7 +33,6 @@ export async function POST() {
         console.log(`Scraping ${urls.length} custom URLs...`)
         const scrapedJobs = await scrapeMultipleUrls(urls)
         
-        // Convert scraped jobs to RawJob format
         const formattedScrapedJobs: RawJob[] = scrapedJobs.map(job => ({
           title: job.title,
           company: job.company,
@@ -50,25 +56,32 @@ export async function POST() {
       )
     }
 
-    // Filter based on user preferences
+    // Filter based on user preferences - this is the key step
     const filteredJobs = filterJobsByPreferences(allJobs, {
       desiredRoles: settings?.desiredRoles,
       preferredLocations: settings?.preferredLocations,
+      remotePreference: settings?.remotePreference,
       skills: settings?.skills,
       industries: settings?.industries,
+      dealBreakers: settings?.dealBreakers,
     })
 
-    // Take top 50 jobs
-    const jobsToSave = (filteredJobs.length > 0 ? filteredJobs : allJobs).slice(0, 50)
+    // If filtering returns nothing, take top jobs anyway but fewer
+    let jobsToSave: RawJob[]
+    if (filteredJobs.length > 0) {
+      jobsToSave = filteredJobs.slice(0, 30)
+      console.log(`Using ${jobsToSave.length} filtered jobs`)
+    } else {
+      // No matches - take fewer random jobs as fallback
+      jobsToSave = allJobs.slice(0, 10)
+      console.log(`No matches found, using ${jobsToSave.length} random jobs as fallback`)
+    }
 
-    console.log(`Attempting to save ${jobsToSave.length} jobs...`)
-
-    // Get existing job URLs to avoid duplicates (application-level deduplication)
+    // Get existing jobs for deduplication
     const existingJobs = await prisma.job.findMany({
       select: { url: true, title: true, company: true }
     })
     
-    // Create a set of existing job identifiers (url or title+company combo)
     const existingSet = new Set<string>()
     existingJobs.forEach(j => {
       existingSet.add(j.url)
@@ -89,12 +102,12 @@ export async function POST() {
         success: true,
         data: {
           jobsFound: 0,
-          message: 'No new jobs found. All jobs already exist in your feed.',
+          message: 'No new jobs found. All matching jobs already exist in your feed.',
         }
       })
     }
 
-    // Store new jobs in database
+    // Store new jobs
     const createdJobs = await prisma.job.createMany({
       data: newJobs.map(job => ({
         title: job.title,
@@ -113,7 +126,7 @@ export async function POST() {
     // Log the search
     await prisma.searchLog.create({
       data: {
-        query: `APIs + ${settings?.scrapeUrls ? 'Custom URLs' : 'No custom URLs'}`,
+        query: `Filtered ${allJobs.length} -> ${filteredJobs.length} matching -> ${createdJobs.count} new`,
         jobsFound: createdJobs.count,
       }
     })
@@ -123,6 +136,7 @@ export async function POST() {
       data: {
         jobsFound: createdJobs.count,
         totalScanned: allJobs.length,
+        matchingJobs: filteredJobs.length,
       }
     })
   } catch (error) {
