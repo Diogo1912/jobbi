@@ -6,7 +6,8 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
-export const gemini = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+// Use gemini-2.0-flash which is the latest model
+export const gemini = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
 export interface JobSearchResult {
   title: string
@@ -103,4 +104,3 @@ Return ONLY valid JSON, no markdown.`
     return { score: 0, analysis: 'Unable to analyze job fit.' }
   }
 }
-
