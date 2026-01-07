@@ -15,7 +15,8 @@ import {
   Ban,
   MessageSquare,
   Save,
-  CheckCircle
+  CheckCircle,
+  Globe
 } from 'lucide-react'
 import { Settings } from '@prisma/client'
 
@@ -28,6 +29,8 @@ interface FormField {
   label: string
   icon: any
   placeholder: string
+  rows?: number
+  hint?: string
 }
 
 const formFields: FormField[] = [
@@ -97,6 +100,14 @@ const formFields: FormField[] = [
     icon: MessageSquare,
     placeholder: 'Anything else that might help...',
   },
+  {
+    key: 'scrapeUrls',
+    label: 'Custom job board URLs to scrape',
+    icon: Globe,
+    placeholder: 'https://company.com/careers\nhttps://jobs.example.com\nhttps://boards.greenhouse.io/company',
+    rows: 4,
+    hint: 'Add career pages or job boards to scrape (one URL per line)',
+  },
 ]
 
 export function SettingsForm({ settings }: SettingsFormProps) {
@@ -153,13 +164,16 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                     {field.label}
                   </span>
                 </div>
+                {field.hint && (
+                  <p className="text-xs text-steel-500 mb-2">{field.hint}</p>
+                )}
                 
                 <textarea
                   value={value || ''}
                   onChange={(e) => handleChange(field.key, e.target.value)}
                   placeholder={field.placeholder}
                   className="textarea text-sm"
-                  rows={2}
+                  rows={field.rows || 2}
                 />
               </label>
             </motion.div>

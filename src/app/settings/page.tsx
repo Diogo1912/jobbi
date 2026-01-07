@@ -18,6 +18,7 @@ const defaultSettings: Settings = {
   companySize: null,
   dealBreakers: null,
   additionalNotes: null,
+  scrapeUrls: null,
   updatedAt: new Date(),
   createdAt: new Date(),
 }

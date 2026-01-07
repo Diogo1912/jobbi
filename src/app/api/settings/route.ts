@@ -42,6 +42,7 @@ export async function PUT(request: NextRequest) {
         companySize: body.companySize,
         dealBreakers: body.dealBreakers,
         additionalNotes: body.additionalNotes,
+        scrapeUrls: body.scrapeUrls,
       },
       update: {
         desiredRoles: body.desiredRoles,
@@ -55,6 +56,7 @@ export async function PUT(request: NextRequest) {
         companySize: body.companySize,
         dealBreakers: body.dealBreakers,
         additionalNotes: body.additionalNotes,
+        scrapeUrls: body.scrapeUrls,
       },
     })
 
@@ -67,4 +69,3 @@ export async function PUT(request: NextRequest) {
     )
   }
 }
-

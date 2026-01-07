@@ -17,7 +17,7 @@ model Job {
   type        JobType  @default(FULL_TIME)
   salary      String?
   description String   @db.Text
-  url         String
+  url         String   @unique // Unique to prevent duplicates
   source      String?  // Where the job was found
   postedAt    DateTime?
   createdAt   DateTime @default(now())
@@ -81,6 +81,9 @@ model Settings {
   // Open-ended
   additionalNotes   String?  @db.Text  // Any other preferences
   
+  // Custom scraping sources
+  scrapeUrls        String?  @db.Text  // URLs to scrape (one per line)
+  
   updatedAt         DateTime @updatedAt
   createdAt         DateTime @default(now())
 }
@@ -92,4 +95,3 @@ model SearchLog {
   jobsFound   Int      @default(0)
   searchedAt  DateTime @default(now())
 }
-
