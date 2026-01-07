@@ -6,8 +6,8 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
-// Use gemini-2.0-flash which is the latest model
-export const gemini = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+// Use Gemini 3.0 Flash - the latest and fastest model (Dec 2025)
+export const gemini = genAI.getGenerativeModel({ model: 'gemini-3.0-flash' })
 
 export interface JobSearchResult {
   title: string
