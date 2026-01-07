@@ -10,7 +10,8 @@ import {
   ExternalLink,
   Bookmark,
   BookmarkCheck,
-  Briefcase
+  Briefcase,
+  Sparkles
 } from 'lucide-react'
 import { Job, JobType, TrackedJob } from '@prisma/client'
 
@@ -33,12 +34,12 @@ const jobTypeLabels: Record<JobType, string> = {
 }
 
 const jobTypeColors: Record<JobType, string> = {
-  FULL_TIME: 'bg-blue-100 text-blue-700',
-  PART_TIME: 'bg-purple-100 text-purple-700',
-  CONTRACT: 'bg-amber-100 text-amber-700',
-  INTERNSHIP: 'bg-green-100 text-green-700',
-  FREELANCE: 'bg-pink-100 text-pink-700',
-  REMOTE: 'bg-teal-100 text-teal-700',
+  FULL_TIME: 'bg-blue-100 text-blue-600',
+  PART_TIME: 'bg-purple-100 text-purple-600',
+  CONTRACT: 'bg-amber-100 text-amber-600',
+  INTERNSHIP: 'bg-emerald-100 text-emerald-600',
+  FREELANCE: 'bg-pink-100 text-pink-600',
+  REMOTE: 'bg-teal-100 text-teal-600',
 }
 
 export function JobCard({ job, index = 0 }: JobCardProps) {
@@ -68,16 +69,19 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="card-hover p-6"
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, delay: index * 0.1, type: 'spring', bounce: 0.3 }}
+      className="card-hover p-7 relative overflow-visible"
     >
+      {/* Decorative corner bubble */}
+      <div className="absolute -top-3 -right-3 w-20 h-20 bg-gradient-to-br from-jobbi-50 to-blue-100 rounded-full opacity-60 blur-xl" />
+      
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex items-center gap-4">
+      <div className="relative flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-center gap-5">
           {/* Company Logo Placeholder */}
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-steel-100 to-steel-200 flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-jobbi-50 to-jobbi-light/30 flex items-center justify-center flex-shrink-0 shadow-inner">
             {job.companyLogo ? (
               <img 
                 src={job.companyLogo} 
@@ -85,15 +89,15 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
                 className="w-full h-full object-cover rounded-2xl"
               />
             ) : (
-              <Building2 className="w-6 h-6 text-steel-400" />
+              <Building2 className="w-7 h-7 text-jobbi-muted" />
             )}
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-jobbi-dark line-clamp-1">
+            <h3 className="text-xl font-bold text-jobbi-dark line-clamp-1 mb-1">
               {job.title}
             </h3>
-            <p className="text-steel-500 font-medium">{job.company}</p>
+            <p className="text-jobbi-muted font-semibold">{job.company}</p>
           </div>
         </div>
 
@@ -102,53 +106,53 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
           onClick={handleSave}
           disabled={isLoading}
           className={`
-            p-2.5 rounded-xl transition-all duration-200
+            p-3.5 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md
             ${isSaved 
-              ? 'bg-accent/10 text-accent hover:bg-accent/20' 
-              : 'bg-steel-100 text-steel-400 hover:bg-steel-200 hover:text-jobbi-dark'
+              ? 'bg-gradient-to-br from-accent/20 to-accent/10 text-accent hover:scale-110' 
+              : 'bg-jobbi-50 text-jobbi-muted hover:bg-jobbi-light/30 hover:text-jobbi-navy hover:scale-110'
             }
-            disabled:opacity-50
+            disabled:opacity-50 active:scale-95
           `}
           aria-label={isSaved ? 'Remove from saved' : 'Save job'}
         >
           {isSaved ? (
-            <BookmarkCheck className="w-5 h-5" />
+            <BookmarkCheck className="w-6 h-6" />
           ) : (
-            <Bookmark className="w-5 h-5" />
+            <Bookmark className="w-6 h-6" />
           )}
         </button>
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2.5 mb-5">
         <span className={`badge ${jobTypeColors[job.type]}`}>
-          <Briefcase className="w-3 h-3 mr-1" />
+          <Briefcase className="w-3.5 h-3.5 mr-1.5" />
           {jobTypeLabels[job.type]}
         </span>
         
         {job.location && (
-          <span className="badge bg-steel-100 text-steel-600">
-            <MapPin className="w-3 h-3 mr-1" />
+          <span className="badge bg-jobbi-50 text-jobbi-navy">
+            <MapPin className="w-3.5 h-3.5 mr-1.5" />
             {job.location}
           </span>
         )}
         
         {job.salary && (
-          <span className="badge bg-green-50 text-green-700">
-            <DollarSign className="w-3 h-3 mr-1" />
+          <span className="badge bg-emerald-50 text-emerald-600">
+            <DollarSign className="w-3.5 h-3.5 mr-1.5" />
             {job.salary}
           </span>
         )}
       </div>
 
       {/* Description */}
-      <p className="text-steel-600 text-sm leading-relaxed line-clamp-3 mb-4">
+      <p className="text-steel-600 leading-relaxed line-clamp-3 mb-5">
         {job.description}
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-steel-100">
-        <div className="flex items-center gap-2 text-sm text-steel-400">
+      <div className="flex items-center justify-between pt-5 border-t-2 border-jobbi-50">
+        <div className="flex items-center gap-2 text-sm text-jobbi-muted font-medium">
           <Clock className="w-4 h-4" />
           {job.postedAt 
             ? new Date(job.postedAt).toLocaleDateString('en-US', { 
@@ -159,8 +163,11 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
           }
           {job.source && (
             <>
-              <span className="mx-2">•</span>
-              <span>{job.source}</span>
+              <span className="mx-2 text-jobbi-light">•</span>
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                {job.source}
+              </span>
             </>
           )}
         </div>
@@ -169,7 +176,7 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
           href={job.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary text-sm py-2"
+          className="btn-primary text-sm py-2.5 px-5"
         >
           View Job
           <ExternalLink className="w-4 h-4" />
@@ -178,4 +185,3 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
     </motion.article>
   )
 }
-

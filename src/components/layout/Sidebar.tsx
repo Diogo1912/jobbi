@@ -36,20 +36,27 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-jobbi-dark flex flex-col">
+    <aside className="fixed left-0 top-0 h-screen w-72 bg-gradient-to-b from-jobbi-dark via-jobbi-dark to-jobbi-navy flex flex-col rounded-r-4xl shadow-2xl">
+      {/* Decorative bubbles */}
+      <div className="absolute inset-0 overflow-hidden rounded-r-4xl pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-jobbi-navy/30 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -right-10 w-32 h-32 bg-accent/20 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 -left-10 w-24 h-24 bg-jobbi-slate/20 rounded-full blur-2xl" />
+      </div>
+
       {/* Logo */}
-      <div className="p-6">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-accent flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
+      <div className="relative p-8">
+        <Link href="/" className="flex items-center gap-4 group">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center shadow-lg group-hover:shadow-glow transition-all duration-300 group-hover:scale-110">
+            <Sparkles className="w-7 h-7 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">Jobbi</span>
+          <span className="text-3xl font-black text-white tracking-tight">Jobbi</span>
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6">
-        <ul className="space-y-2">
+      <nav className="relative flex-1 px-5 py-8">
+        <ul className="space-y-3">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
@@ -59,14 +66,14 @@ export function Sidebar() {
                 <Link
                   href={item.href}
                   className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200
+                    flex items-center gap-4 px-5 py-4 rounded-2xl font-semibold transition-all duration-300
                     ${isActive 
-                      ? 'bg-accent text-white' 
-                      : 'text-steel-400 hover:bg-jobbi-navy hover:text-white'
+                      ? 'bg-gradient-to-r from-accent to-accent-hover text-white shadow-lg shadow-accent/30 scale-105' 
+                      : 'text-jobbi-light hover:bg-white/10 hover:text-white hover:translate-x-1'
                     }
                   `}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-6 h-6" />
                   {item.label}
                 </Link>
               </li>
@@ -76,24 +83,23 @@ export function Sidebar() {
       </nav>
 
       {/* Search for Jobs Button */}
-      <div className="p-4 border-t border-jobbi-navy">
+      <div className="relative p-5">
         <button
           onClick={handleNewSearch}
           disabled={isSearching}
-          className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-white to-jobbi-50 text-jobbi-dark font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
         >
-          <RefreshCw className={`w-4 h-4 ${isSearching ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-5 h-5 ${isSearching ? 'animate-spin' : ''}`} />
           {isSearching ? 'Searching...' : 'Find New Jobs'}
         </button>
       </div>
 
       {/* Footer */}
-      <div className="p-4 text-center">
-        <p className="text-xs text-steel-500">
-          Powered by Gemini AI
+      <div className="relative p-5 text-center">
+        <p className="text-sm text-jobbi-light/60 font-medium">
+          ✨ Powered by Gemini AI
         </p>
       </div>
     </aside>
   )
 }
-

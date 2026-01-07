@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans`}>
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 ml-64">
+          <main className="flex-1 ml-72">
             {children}
           </main>
         </div>
@@ -31,4 +31,3 @@ export default function RootLayout({
     </html>
   )
 }
-

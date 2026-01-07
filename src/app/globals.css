@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --background: #f8fafc;
-    --foreground: #0f172a;
+    --foreground: #1a365d;
   }
 
   html {
@@ -13,101 +13,107 @@
   }
 
   body {
-    @apply bg-steel-50 text-jobbi-dark antialiased;
+    @apply bg-gradient-to-br from-jobbi-50 via-white to-blue-50 text-jobbi-dark antialiased min-h-screen;
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-steel-100 rounded-full;
+    @apply bg-jobbi-50 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-steel-300 rounded-full hover:bg-steel-400 transition-colors;
+    @apply bg-jobbi-light rounded-full hover:bg-jobbi-muted transition-colors;
   }
 }
 
 @layer components {
-  /* Card styles */
+  /* Card styles - more bubbly */
   .card {
-    @apply bg-white rounded-2xl shadow-soft border border-steel-100 overflow-hidden;
+    @apply bg-white rounded-3xl shadow-soft border border-jobbi-50 overflow-hidden;
   }
 
   .card-hover {
-    @apply card transition-all duration-300 hover:shadow-card hover:-translate-y-1;
+    @apply card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-2 hover:border-jobbi-light;
   }
 
-  /* Button styles */
+  /* Button styles - rounder and more fun */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2;
   }
 
   .btn-primary {
-    @apply btn bg-accent text-white hover:bg-accent-hover focus:ring-accent shadow-md hover:shadow-lg;
+    @apply btn bg-gradient-to-r from-accent to-accent-hover text-white hover:from-accent-hover hover:to-accent-dark focus:ring-accent/30 shadow-lg hover:shadow-glow hover:scale-105 active:scale-95;
   }
 
   .btn-secondary {
-    @apply btn bg-jobbi-navy text-white hover:bg-jobbi-slate focus:ring-jobbi-navy;
+    @apply btn bg-gradient-to-r from-jobbi-navy to-jobbi-slate text-white hover:from-jobbi-slate hover:to-jobbi-navy focus:ring-jobbi-slate/30 shadow-lg hover:shadow-glow-blue hover:scale-105 active:scale-95;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent text-jobbi-muted hover:bg-steel-100 focus:ring-steel-300;
+    @apply btn bg-transparent text-jobbi-muted hover:bg-jobbi-50 hover:text-jobbi-navy focus:ring-jobbi-light/50;
   }
 
   .btn-outline {
-    @apply btn border-2 border-steel-200 text-jobbi-slate hover:border-accent hover:text-accent focus:ring-accent;
+    @apply btn border-2 border-jobbi-light text-jobbi-navy hover:border-accent hover:text-accent hover:bg-accent/5 focus:ring-accent/30;
   }
 
-  /* Input styles */
+  /* Input styles - softer and rounder */
   .input {
-    @apply w-full px-4 py-3 rounded-xl border border-steel-200 bg-white text-jobbi-dark placeholder:text-steel-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200;
+    @apply w-full px-5 py-4 rounded-2xl border-2 border-jobbi-50 bg-white text-jobbi-dark placeholder:text-steel-400 focus:outline-none focus:ring-4 focus:ring-jobbi-light/30 focus:border-jobbi-muted transition-all duration-300;
   }
 
   .textarea {
     @apply input resize-none min-h-[120px];
   }
 
-  /* Badge styles */
+  /* Badge styles - pill shaped */
   .badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold;
   }
 
   .badge-type {
-    @apply badge bg-steel-100 text-jobbi-slate;
+    @apply badge bg-jobbi-50 text-jobbi-navy;
   }
 
   .badge-status {
     @apply badge;
   }
 
-  /* Nav link */
+  /* Nav link - bubbly */
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-steel-500 font-medium transition-all duration-200 hover:bg-steel-100 hover:text-jobbi-dark;
+    @apply flex items-center gap-3 px-5 py-3.5 rounded-2xl text-jobbi-light font-semibold transition-all duration-300 hover:bg-white/10 hover:text-white hover:scale-105;
   }
 
   .nav-link-active {
-    @apply nav-link bg-accent/10 text-accent hover:bg-accent/15;
+    @apply nav-link bg-gradient-to-r from-accent to-accent-hover text-white shadow-lg;
   }
 }
 
 @layer utilities {
   /* Gradient text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-orange-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-jobbi-navy to-jobbi-slate;
   }
 
-  /* Glass effect */
+  .text-gradient-accent {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent-dark;
+  }
+
+  /* Glass effect - softer */
   .glass {
-    @apply bg-white/80 backdrop-blur-lg;
+    @apply bg-white/90 backdrop-blur-xl;
   }
 
-  /* Smooth fade edges for scrollable content */
-  .fade-edges {
-    mask-image: linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent);
+  /* Bubble decorations */
+  .bubble-bg {
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(251, 146, 60, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(147, 197, 253, 0.15) 0%, transparent 40%);
   }
 }
-
