@@ -6,8 +6,8 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
-// Use Gemini 3.0 Flash - the latest and fastest model (Dec 2025)
-export const gemini = genAI.getGenerativeModel({ model: 'gemini-3.0-flash' })
+// Use gemini-1.5-pro - stable and widely available
+export const gemini = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
 
 export interface JobSearchResult {
   title: string
@@ -32,31 +32,49 @@ export async function generateJobSearch(preferences: {
   dealBreakers?: string | null
   additionalNotes?: string | null
 }): Promise<JobSearchResult[]> {
-  const prompt = `You are Jobbi, an AI job search assistant. Based on the user's preferences below, generate a list of 10 realistic job listings that would match their criteria.
+  const prompt = `You are Jobbi, an AI job search assistant. Based on the user's preferences, generate 10 REALISTIC job listings that match their criteria.
 
 USER PREFERENCES:
-- Desired Roles: ${preferences.desiredRoles || 'Not specified'}
-- Preferred Locations: ${preferences.preferredLocations || 'Not specified'}
-- Remote Preference: ${preferences.remotePreference || 'Not specified'}
-- Salary Expectation: ${preferences.salaryExpectation || 'Not specified'}
-- Skills: ${preferences.skills || 'Not specified'}
-- Experience: ${preferences.experience || 'Not specified'}
-- Industries of Interest: ${preferences.industries || 'Not specified'}
-- Company Size Preference: ${preferences.companySize || 'Not specified'}
+- Desired Roles: ${preferences.desiredRoles || 'Software Engineer, Developer, Tech roles'}
+- Preferred Locations: ${preferences.preferredLocations || 'Remote, USA, Europe'}
+- Remote Preference: ${preferences.remotePreference || 'Remote friendly'}
+- Salary Expectation: ${preferences.salaryExpectation || 'Competitive'}
+- Skills: ${preferences.skills || 'Programming, Problem solving'}
+- Experience: ${preferences.experience || 'Mid-level'}
+- Industries of Interest: ${preferences.industries || 'Technology, Software'}
+- Company Size Preference: ${preferences.companySize || 'Any'}
 - Deal Breakers: ${preferences.dealBreakers || 'None specified'}
 - Additional Notes: ${preferences.additionalNotes || 'None'}
 
-Generate 10 diverse job listings in JSON format. Include a mix of companies (real company names are fine) and make the listings feel authentic. Each job should have:
-- title: Job title
-- company: Company name
-- location: City, State or Country (or "Remote")
-- type: One of FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP, FREELANCE, REMOTE
-- salary: Salary range (e.g., "$80,000 - $120,000/year")
-- description: A compelling 2-3 sentence job description
-- url: A realistic job board URL (use linkedin.com/jobs/view/[random-id], indeed.com/viewjob?jk=[random-id], or the company's career page)
-- source: Where the job was found (LinkedIn, Indeed, Company Website, etc.)
+IMPORTANT REQUIREMENTS:
+1. Use REAL companies that are known to hire for these roles (Google, Meta, Microsoft, Amazon, Apple, Netflix, Stripe, Airbnb, Uber, Spotify, Salesforce, Adobe, Oracle, IBM, Cisco, VMware, Shopify, Atlassian, Twilio, Datadog, Snowflake, etc.)
+2. Generate REALISTIC job titles that these companies actually use
+3. For URLs, use the company's ACTUAL careers page format:
+   - Google: careers.google.com/jobs/results/
+   - Meta: metacareers.com/jobs/
+   - Microsoft: careers.microsoft.com/
+   - Amazon: amazon.jobs/en/jobs/
+   - Apple: jobs.apple.com/
+   - Netflix: jobs.netflix.com/
+   - Stripe: stripe.com/jobs/
+   - Airbnb: careers.airbnb.com/
+   - Spotify: lifeatspotify.com/jobs
+   - Salesforce: salesforce.com/company/careers/
+   - For other companies: use linkedin.com/jobs/view/ with a realistic ID
+4. Salary ranges should be realistic for the role and location
+5. Descriptions should be 2-3 sentences highlighting key responsibilities and requirements
 
-Return ONLY valid JSON array, no markdown formatting or explanations.`
+Return ONLY a valid JSON array with these fields for each job:
+- title (string): Realistic job title
+- company (string): Real company name
+- location (string): City, State/Country or "Remote"
+- type (string): One of FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP, FREELANCE, REMOTE
+- salary (string): Realistic salary range like "$120,000 - $180,000/year"
+- description (string): 2-3 sentence job description
+- url (string): Real company careers page URL
+- source (string): "Company Website" or "LinkedIn"
+
+Return ONLY the JSON array, no markdown, no explanation.`
 
   try {
     const result = await gemini.generateContent(prompt)
