@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateJobSearch } from '@/lib/gemini'
+import { fetchAllJobs, filterJobsByPreferences, RawJob } from '@/lib/jobSources'
 
 export async function POST() {
   try {
@@ -9,41 +9,44 @@ export async function POST() {
       where: { id: 'user-settings' }
     })
 
-    // Generate jobs using Gemini
-    const jobs = await generateJobSearch({
-      desiredRoles: settings?.desiredRoles,
-      preferredLocations: settings?.preferredLocations,
-      remotePreference: settings?.remotePreference,
-      salaryExpectation: settings?.salaryExpectation,
-      skills: settings?.skills,
-      experience: settings?.experience,
-      industries: settings?.industries,
-      companySize: settings?.companySize,
-      dealBreakers: settings?.dealBreakers,
-      additionalNotes: settings?.additionalNotes,
-    })
-
-    if (jobs.length === 0) {
+    // Fetch jobs from all free sources
+    console.log('Fetching jobs from free APIs...')
+    const allJobs = await fetchAllJobs()
+    
+    if (allJobs.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'No jobs found. Please check your settings and try again.' },
+        { success: false, error: 'No jobs found from sources. Please try again later.' },
         { status: 400 }
       )
     }
 
+    // Filter based on user preferences
+    const filteredJobs = filterJobsByPreferences(allJobs, {
+      desiredRoles: settings?.desiredRoles,
+      preferredLocations: settings?.preferredLocations,
+      skills: settings?.skills,
+      industries: settings?.industries,
+    })
+
+    // Take top 30 jobs
+    const jobsToSave = (filteredJobs.length > 0 ? filteredJobs : allJobs).slice(0, 30)
+
+    console.log(`Saving ${jobsToSave.length} jobs to database...`)
+
     // Store jobs in database
     const createdJobs = await Promise.all(
-      jobs.map(job => 
+      jobsToSave.map(job => 
         prisma.job.create({
           data: {
             title: job.title,
             company: job.company,
             location: job.location,
-            type: job.type,
-            salary: job.salary,
+            type: mapJobType(job.type),
+            salary: job.salary || null,
             description: job.description,
             url: job.url,
             source: job.source,
-            postedAt: new Date(),
+            postedAt: job.postedAt || new Date(),
           }
         })
       )
@@ -52,7 +55,7 @@ export async function POST() {
     // Log the search
     await prisma.searchLog.create({
       data: {
-        query: `Auto-search based on user preferences`,
+        query: `Fetched from: Remotive, Arbeitnow, RemoteOK, Adzuna`,
         jobsFound: createdJobs.length,
       }
     })
@@ -61,7 +64,7 @@ export async function POST() {
       success: true,
       data: {
         jobsFound: createdJobs.length,
-        jobs: createdJobs,
+        sources: ['Remotive', 'Arbeitnow', 'RemoteOK', 'Adzuna'],
       }
     })
   } catch (error) {
@@ -73,3 +76,12 @@ export async function POST() {
   }
 }
 
+function mapJobType(type: string): 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP' | 'FREELANCE' | 'REMOTE' {
+  const upperType = type.toUpperCase()
+  if (upperType.includes('REMOTE')) return 'REMOTE'
+  if (upperType.includes('PART')) return 'PART_TIME'
+  if (upperType.includes('CONTRACT')) return 'CONTRACT'
+  if (upperType.includes('INTERN')) return 'INTERNSHIP'
+  if (upperType.includes('FREELANCE')) return 'FREELANCE'
+  return 'FULL_TIME'
+}
